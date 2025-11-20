@@ -7,8 +7,6 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private CharacterController controller;
 
-    [SerializeField] InputManager inputManager;
-
     [SerializeField] private float speed;
 
     private Vector3 moveDirection = Vector3.zero;
@@ -17,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnEnable()
     {
-        move = inputManager.inputs.Playing.Move;
+        move = InputManager.Instance.inputs.Playing.Move;
     }
 
     private void Update()
