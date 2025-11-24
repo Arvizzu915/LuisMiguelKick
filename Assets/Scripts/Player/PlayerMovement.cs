@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private CharacterController controller;
 
     [SerializeField] private float speed;
+    [SerializeField] private float rotationSpeed = 12f;
 
     private Vector3 moveDirection = Vector3.zero;
 
@@ -24,5 +25,17 @@ public class PlayerMovement : MonoBehaviour
         moveDirection.z = move.ReadValue<Vector2>().y;
 
         controller.Move(speed * Time.deltaTime * moveDirection);
+
+        if (moveDirection.sqrMagnitude > 0.001f)
+        {
+            Vector3 targetDir = moveDirection.normalized;
+            Quaternion targetRot = Quaternion.LookRotation(targetDir, Vector3.up);
+
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRot,
+                rotationSpeed * Time.deltaTime
+            );
+        }
     }
 }
