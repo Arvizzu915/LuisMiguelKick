@@ -35,7 +35,7 @@ public class EnemySpawner : MonoBehaviour
 
         GameObject enemyPooled = GetEnemyPooling();
 
-        enemyPooled = enemiesPickPool[enemiesPick];
+        //enemyPooled = enemiesPickPool[enemiesPick];
         enemyPooled.SetActive(true);
 
         Vector3 mapPos = GetRandomPositionInMap();
