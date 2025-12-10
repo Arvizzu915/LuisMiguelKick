@@ -1,28 +1,38 @@
-using NUnit.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [SerializeField] private int maxEnemiesInScene = 20, currentEnemiesInScene = 0;
+    [SerializeField] private int maxEnemiesInScene = 20;
+    private int currentEnemiesInScene = 0;
 
-    [SerializeField] GameObject[] enemies;
-    [SerializeField] List<GameObject> enemiesPickPool = new();
-    public List<GameObject> currentEnemies = new();
-    public List<GameObject> enemiesPooling = new();
+    [Header("All possible enemy prefabs")]
+    [SerializeField] private GameObject[] enemies;   // assign 5 prefabs here in inspector
+
+    [Header("Enemies that can spawn right now")]
+    [SerializeField] private List<int> allowedEnemyTypes = new(); // indexes to use
+
+    private List<List<GameObject>> pools = new(); // a pool per enemy type
 
     [SerializeField] private float mapLength = 10;
 
     private void Start()
     {
-        List<int> allEnemiesIndexes = new()
-        {
-            0
-        };
+        // Example: allow all 5 enemy prefabs
+        allowedEnemyTypes = new List<int> { 0, 1, 2, 3, 4 };
 
-        SetEnemiesPool(allEnemiesIndexes);
-
+        CreatePools();
         InvokeRepeating(nameof(SpawnEnemy), 0f, 1f);
+    }
+
+    private void CreatePools()
+    {
+        pools.Clear();
+
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            pools.Add(new List<GameObject>());   // one pool per prefab
+        }
     }
 
     private void SpawnEnemy()
@@ -31,56 +41,37 @@ public class EnemySpawner : MonoBehaviour
 
         currentEnemiesInScene++;
 
-        int enemiesPick = Random.Range(0, enemiesPickPool.Count);
+        // Pick a random enemy type that is allowed
+        int randomIndex = allowedEnemyTypes[Random.Range(0, allowedEnemyTypes.Count)];
 
-        GameObject enemyPooled = GetEnemyPooling();
+        GameObject enemy = GetFromPool(randomIndex);
 
-        //enemyPooled = enemiesPickPool[enemiesPick];
-        enemyPooled.SetActive(true);
-
-        Vector3 mapPos = GetRandomPositionInMap();
-
-        enemyPooled.transform.position = mapPos;
+        enemy.SetActive(true);
+        enemy.transform.position = GetRandomPositionInMap();
     }
 
-    public void SetEnemiesPool(List<int> enemiesIndex)
+    private GameObject GetFromPool(int enemyType)
     {
-        enemiesPickPool.Clear();
+        List<GameObject> pool = pools[enemyType];
 
-        for (int i = 0; i < enemiesIndex.Count; i++)
+        // find inactive object
+        for (int i = 0; i < pool.Count; i++)
         {
-            enemiesPickPool.Add(enemies[enemiesIndex[i]]);
+            if (!pool[i].activeSelf)
+                return pool[i];
         }
+
+        // none available → create a new one
+        GameObject newEnemy = Instantiate(enemies[enemyType]);
+        newEnemy.SetActive(false);
+        pool.Add(newEnemy);
+
+        return newEnemy;
     }
 
-    public GameObject GetEnemyPooling()
+    private Vector3 GetRandomPositionInMap()
     {
-        GameObject enemyToUse = null;
-
-        for (int i = 0; i < enemiesPooling.Count; i++)
-        {
-            if (!enemiesPooling[i].activeSelf)
-            {
-                enemyToUse = enemiesPooling[i];
-                break;
-            }
-        }
-
-        if (enemyToUse == null)
-        {
-            GameObject newEnemy = Instantiate(enemiesPickPool[0]);
-            newEnemy.SetActive(false);
-            enemiesPooling.Add(newEnemy);
-            enemyToUse = newEnemy;
-        }
-
-        return enemyToUse;
-    }
-
-    public Vector3 GetRandomPositionInMap()
-    {
-        Vector3 randomPos = new(Random.Range(-mapLength, mapLength), 0f, Random.Range(-mapLength, mapLength));
-
-        return randomPos;
+        return new Vector3(Random.Range(-mapLength, mapLength), 0f, Random.Range(-mapLength, mapLength));
     }
 }
+
