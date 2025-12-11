@@ -1,17 +1,13 @@
 using UnityEngine;
 
-public class Enemy : MonoBehaviour, IKickable
+public class Enemy : MonoBehaviour
 {
     [SerializeField] private Rigidbody rb;
+    [SerializeField] private EnemySO enemySO;
 
     public void GetKicked(GameObject Player, float kickForce, float liftForce, int kickDamage, Transform playerTrans)
     {
-        float liftForceRand = Random.Range(.1f, liftForce);
-
-        Vector3 kickDir = (transform.position - playerTrans.position).normalized;
-        kickDir = new Vector3(kickDir.x, liftForceRand, kickDir.z);
-
-        rb.AddForce(kickDir * kickForce, ForceMode.Impulse);
+        enemySO.GetKicked(Player, kickForce, liftForce, kickDamage, playerTrans, transform, rb);
         
     }
 }
