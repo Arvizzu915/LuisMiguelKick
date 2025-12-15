@@ -19,7 +19,7 @@ public class EnemySpawner : MonoBehaviour
     private void Start()
     {
         // Example: allow all 5 enemy prefabs
-        allowedEnemyTypes = new List<int> { 0, 1, 2, 3, 4 };
+        allowedEnemyTypes = new List<int> { 0 };
 
         CreatePools();
         InvokeRepeating(nameof(SpawnEnemy), 0f, 1f);

@@ -2,5 +2,5 @@ using UnityEngine;
 
 public interface IKickable
 {
-    public void GetKicked(GameObject Player, float kickForce, float liftForce, int kickDamage, Transform playerTrans, Transform myTrans, Rigidbody myRb);
+    public void GetKicked(GameObject player, float kickForce, float liftForce, int kickDamage, Transform playerTrans);
 }

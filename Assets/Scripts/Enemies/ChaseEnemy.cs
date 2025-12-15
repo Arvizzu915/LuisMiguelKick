@@ -1,15 +1,20 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "ChaseEnemy", menuName = "Enemy")]
-public class ChaseEnemy : EnemySO, IKickable
+[CreateAssetMenu(fileName = "ChaseEnemy", menuName = "EnemyTypes/Chase")]
+public class ChaseEnemy : EnemySO
 {
-    public override void GetKicked(GameObject Player, float kickForce, float liftForce, int kickDamage, Transform playerTrans, Transform myTrans, Rigidbody myRb)
+    public override void GetKicked(GameObject player, float kickForce, float liftForce, int kickDamage, Transform playerTrans, Enemy enemy)
     {
-        float liftForceRand = Random.Range(.1f, liftForce);
+        if (enemy.knockRoutine != null)
+            enemy.StopCoroutine(enemy.knockRoutine);
 
-        Vector3 kickDir = (myTrans.position - playerTrans.position).normalized;
-        kickDir = new Vector3(kickDir.x, liftForceRand, kickDir.z);
+        enemy.knockRoutine = enemy.StartCoroutine(enemy.KnockRoutine());
 
-        myRb.AddForce(kickDir * kickForce, ForceMode.Impulse);
+        // Apply force to ragdoll root AFTER ragdoll is active
+        Vector3 dir = (enemy.transform.position - playerTrans.position).normalized;
+        dir.y = Random.Range(.1f, liftForce);
+
+        // Apply force to the main rigidbody (now non-kinematic)
+        enemy.mainRB.AddForce(dir * kickForce, ForceMode.Impulse);
     }
 }

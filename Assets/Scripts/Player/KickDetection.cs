@@ -1,35 +1,48 @@
-using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class KickDetection : MonoBehaviour
 {
-    public List<IKickable> kickableObjectsBeingDetected = new();
+    [SerializeField] private float detectionCoyoteTime = 0.2f;
 
-    public List<GameObject> kickables = new();
+    public readonly List<IKickable> kickablesDetected = new();
+
+    private readonly Dictionary<IKickable, Coroutine> activeCoyoteTimers = new();
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out IKickable kickableObj))
+        if (other.TryGetComponent(out IKickable kickable))
         {
-            kickables.Add(other.gameObject);
-            kickableObjectsBeingDetected.Add(kickableObj);
+            // Cancel coyote timer if active
+            if (activeCoyoteTimers.ContainsKey(kickable))
+            {
+                StopCoroutine(activeCoyoteTimers[kickable]);
+                activeCoyoteTimers.Remove(kickable);
+            }
+
+            if (!kickablesDetected.Contains(kickable))
+                kickablesDetected.Add(kickable);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent(out IKickable kickableObj))
+        if (other.TryGetComponent(out IKickable kickable))
         {
-            kickables.Remove(other.gameObject);
-            StartCoroutine(DetectionCoyoteTime(kickableObj));
+            if (activeCoyoteTimers.ContainsKey(kickable))
+                StopCoroutine(activeCoyoteTimers[kickable]);
+
+            Coroutine timer = StartCoroutine(CoyoteRemoval(kickable));
+            activeCoyoteTimers[kickable] = timer;
         }
     }
 
-    private IEnumerator DetectionCoyoteTime(IKickable kickable)
+    private IEnumerator CoyoteRemoval(IKickable kickable)
     {
-        yield return new WaitForSeconds(.2f);
-        kickableObjectsBeingDetected.Remove(kickable);
+        yield return new WaitForSeconds(detectionCoyoteTime);
+
+        kickablesDetected.Remove(kickable);
+        activeCoyoteTimers.Remove(kickable);
     }
 }
